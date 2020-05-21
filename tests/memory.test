@@ -225,10 +225,12 @@ memtest2 memory-3.1 {Deliberate memory leak} -constraints {} -body { #<<<
 } -returnCodes error -match regexp -result {^Leaked memory:\n\t0x[0-9a-f]+\s+-\s+0x[0-9a-f]+\s+[0-9]+\s+@\s+\./generic/rl_json.c\s+[0-9]+\s+memory-3.1$}
 #>>>
 }
+if {![namespace ensemble exists ::rl_json::json]} {
 test memory-3.2 {Deliberate memory leak} -constraints {} -body { #<<<
 	json _leak_obj
 } -result {}
 #>>>
+}
 
 ::tcltest::cleanupTests
 return

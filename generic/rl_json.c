@@ -111,6 +111,33 @@ static int new_json_value_from_list(Tcl_Interp* interp, int objc, Tcl_Obj *const
 static int NRforeach_next_loop_bottom(ClientData cdata[], Tcl_Interp* interp, int retcode);
 static int json_pretty_dbg(Tcl_Interp* interp, Tcl_Obj* json, Tcl_Obj* indent, Tcl_Obj* pad, Tcl_DString* ds);
 
+/*
+ * Reimplementation of Tcl_WrongNumArgs that behaves as per the documentation,
+ * which Tcl_WrongNumArgs itself doesn't. Tcl_WrongNumArgs does undocumented
+ * magic when called from inside an ensemble subcommand
+ */
+
+void wrong_num_args(Tcl_Interp *interp, int objc, Tcl_Obj *const objv[], const char *message)
+{
+    Tcl_Obj *objPtr;
+    int i;
+
+    objPtr = Tcl_NewObj();
+    Tcl_AppendToObj(objPtr, "wrong # args: should be \"", -1);
+    for (i = 0; i < objc; i++) {
+	Tcl_AppendObjToObj(objPtr, objv[i]);
+	if (i < objc - 1 || message != NULL) {
+	    Tcl_AppendStringsToObj(objPtr, " ", NULL);
+	}
+    }
+    if (message != NULL) {
+	Tcl_AppendStringsToObj(objPtr, message, NULL);
+    }
+    Tcl_AppendStringsToObj(objPtr, "\"", NULL);
+    Tcl_SetErrorCode(interp, "TCL", "WRONGARGS", NULL);
+    Tcl_SetObjResult(interp, objPtr);
+}
+
 const char* get_dyn_prefix(enum json_types type) //{{{
 {
 	if (!type_is_dynamic(type)) {
@@ -2699,7 +2726,7 @@ static int jsonString(ClientData cdata, Tcl_Interp* interp, int objc, Tcl_Obj *c
 	enum json_types		type;
 
 	if (objc != 2) {
-		Tcl_WrongNumArgs(interp, 1, objv, "value");
+		wrong_num_args(interp, 1, objv, "value");
 		return TCL_ERROR;
 	}
 
@@ -2723,7 +2750,7 @@ static int jsonNumber(ClientData cdata, Tcl_Interp* interp, int objc, Tcl_Obj *c
 	int					res = TCL_OK;
 
 	if (objc != 2) {
-		Tcl_WrongNumArgs(interp, 1, objv, "value");
+		wrong_num_args(interp, 1, objv, "value");
 		return TCL_ERROR;
 	}
 
@@ -2741,7 +2768,7 @@ static int jsonBoolean(ClientData cdata, Tcl_Interp* interp, int objc, Tcl_Obj *
 	int b;
 
 	if (objc != 2) {
-		Tcl_WrongNumArgs(interp, 1, objv, "value");
+		wrong_num_args(interp, 1, objv, "value");
 		return TCL_ERROR;
 	}
 
@@ -3807,7 +3834,7 @@ DLLEXPORT int Rl_json_Init(Tcl_Interp* interp) //{{{
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("decode",     -1));
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("isnull",     -1));
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("template",   -1));
-			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("_template",  -1));
+			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("template_string",  -1));
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("foreach",    -1));
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("lmap",       -1));
 			Tcl_ListObjAppendElement(NULL, subcommands, Tcl_NewStringObj("amap",       -1));
