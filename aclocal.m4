@@ -13,15 +13,15 @@ AC_DEFUN([ENABLE_ENSEMBLE], [
 	#trap 'echo "val: (${enable_ensemble+set}), ensemble_ok: ($ensemble_ok), ensemble: ($ENSEMBLE)"' DEBUG
 	AC_MSG_CHECKING([whether to provide the json command as an ensemble])
 	AC_ARG_ENABLE(ensemble,
-		AC_HELP_STRING([--enable-ensemble], [Provide the json command using a proper ensemble, otherwise handle the subcommand dispatch internally (default: no)]),
-		[ensemble_ok=$enableval], [ensemble_ok=no])
+		AC_HELP_STRING([--enable-ensemble], [Provide the json command using a proper ensemble, otherwise handle the subcommand dispatch internally (default: yes)]),
+		[ensemble_ok=$enableval], [ensemble_ok=yes])
 
-	if test "$ensemble_ok" = "yes" -o "${ENSEMBLE}" = 1; then
-		ENSEMBLE=1
-		AC_MSG_RESULT([yes])
-	else
+	if test "$ensemble_ok" = "no" -o "${ENSEMBLE}" = 0; then
 		ENSEMBLE=0
 		AC_MSG_RESULT([no])
+	else
+		ENSEMBLE=1
+		AC_MSG_RESULT([yes])
 	fi
 
 	AC_DEFINE_UNQUOTED([ENSEMBLE], [$ENSEMBLE], [Ensemble enabled?])
